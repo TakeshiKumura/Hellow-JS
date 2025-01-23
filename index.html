@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KS-903SNS画面</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+        }
+        .header {
+            background-color: #00b900;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .chat-box {
+            padding: 20px;
+            height: calc(100vh - 150px);
+            overflow-y: scroll;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message .user {
+            align-self: flex-start;
+            background-color: #e1e1e1;
+            border-radius: 15px;
+            padding: 10px;
+            max-width: 70%;
+        }
+        .message .bot {
+            align-self: flex-end;
+            background-color: #00b900;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            max-width: 70%;
+        }
+        .input-box {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #ddd;
+        }
+        .input-box input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-box button {
+            background-color: #00b900;
+            color: white;
+            padding: 10px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .input-box button:hover {
+            background-color: #008f00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container" onclick="focusInput(event)">
+        <div class="header">
+            <span>KS-903SNS チャット</span>
+        </div>
+        <div class="chat-box" id="chatBox">
+            <!-- メッセージがここに追加されます -->
+            <div class="message">
+                <div class="user">How To USER！</div>
+            </div>
+            <div class="message">
+                <div class="bot">【命令：友達やりとり】と入力してアカウントを行ってください！？</div>
+            </div>
+        </div>
+        <div class="input-box">
+            <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+            <button onclick="sendMessage()">送信</button>
+        </div>
+    </div>
+
+    <div id="friendsSection" style="display:none;">
+        <input type="text" id="friendUsername" placeholder="友達のユーザー名">
+        <button onclick="addFriend()">友達追加</button>
+        <ul id="friendsList"></ul>
+    </div>
+    
+    <script>
+        let friends = [];
+    
+        function addFriend() {
+            const friendUsername = document.getElementById('friendUsername').value;
+            if (!friendUsername) {
+                alert('友達のユーザー名を入力してください');
+                return;
+            }
+            friends.push(friendUsername);
+            updateFriendsList();
+        }
+    
+        function updateFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '';
+            friends.forEach(friend => {
+                const listItem = document.createElement('li');
+                listItem.innerText = friend;
+                friendsList.appendChild(listItem);
+            });
+        }
+    </script>
+    
+
+    <script>
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const chatBox = document.getElementById('chatBox');
+            
+            if (messageInput.value.trim() === '') return;
+            
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('message');
+            userMessage.innerHTML = `<div class="user">${messageInput.value}</div>`;
+            
+            chatBox.appendChild(userMessage);
+            messageInput.value = '';
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            setTimeout(() => {
+                const botMessage = document.createElement('div');
+                botMessage.classList.add('message');
+                botMessage.innerHTML = `<div class="bot">すぐにお手伝いします！</div>`;
+                
+                chatBox.appendChild(botMessage);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
+        }
+
+        function handleKeyDown(event) {
+            // Shift + A が押された場合
+            if (event.shiftKey && event.key === 'A') {
+                const messageInput = document.getElementById('messageInput');
+                messageInput.focus(); // メッセージ入力フィールドにフォーカスを当てる
+            }
+            // // エンターキーが押されたとき（シフトキーなし）
+            // if (event.key === 'Enter' && !event.shiftKey) {
+            //     sendMessage();
+            // }
+            // function handleKeyDown(event) {
+            // Shift + Enter が押された場合
+            if (event.key === 'Enter' && event.shiftKey) {
+                sendMessage(); // メッセージを送信する
+            }
+        }
+
+        // ページのどこでもタップしたらメッセージ入力欄にフォーカスを当てる
+        function focusInput(event) {
+            const messageInput = document.getElementById('messageInput');
+            // メッセージ入力欄以外をクリックした場合は、入力欄にフォーカスを当てる
+            if (!messageInput.contains(event.target)) {
+                messageInput.focus();
+            }
+        }
+    </script>
+
+</body>
+</html>
