@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KS-903SNS画面</title>
     <style>
-        body {
+               body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
@@ -84,108 +84,217 @@
 </head>
 <body>
 
-    <div class="chat-container" onclick="focusInput(event)">
-        <div class="header">
-            <span>KS-903SNS チャット</span>
-        </div>
+<div class="chat-container" onclick="focusInput(event)">
+    <div class="header">
+        <span>KS-903SNS チャット</span>
+    </div>
+ 
         <div class="chat-box" id="chatBox">
             <!-- メッセージがここに追加されます -->
             <div class="message">
                 <div class="user">How To USER！</div>
             </div>
             <div class="message">
-                <div class="bot">【命令：友達やりとり】と入力してアカウントを行ってください！？</div>
+                <div class="bot">【判決命令：友達やりとり】と入力してアカウントを行ってください！？</div>
             </div>
         </div>
-        <div class="input-box">
-            <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
-            <button onclick="sendMessage()">送信</button>
-        </div>
+    <div class="input-box">
+        <input type="text" id="messageInput" placeholder="メッセージを入力..." onclick="startSpeechRecognition()" onkeydown="handleKeyDown(event)">
+        <button onclick="sendMessage()">送信</button>
     </div>
 
-    <div id="friendsSection" style="display:none;">
-        <input type="text" id="friendUsername" placeholder="友達のユーザー名">
-        <button onclick="addFriend()">友達追加</button>
-        <ul id="friendsList"></ul>
+    <!-- 新規登録フォーム -->
+    <div class="registration-form" id="registrationForm">
+        <h2>新規登録</h2>
+        <input type="text" id="newUsername" placeholder="ユーザー名">
+        <input type="password" id="newPassword" placeholder="パスワード">
+        <button onclick="registerAccount()">登録</button>
     </div>
-    
-    <script>
-        let friends = [];
-    
-        function addFriend() {
-            const friendUsername = document.getElementById('friendUsername').value;
-            if (!friendUsername) {
-                alert('友達のユーザー名を入力してください');
+
+    <!-- 友達リストフォーム -->
+    <div class="friend-list" id="friendList">
+        <h2>交換した友達</h2>
+        <ul id="friendListUL">
+            <!-- 友達リストがここに表示されます -->
+        </ul>
+        <button onclick="startChat()">選択してやり取り開始</button>
+    </div>
+</div>
+
+<script>
+ let recognition;   
+ let friends = [];
+let currentUser = null;
+
+// メッセージ送信機能
+function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const chatBox = document.getElementById('chatBox');
+
+    const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
+
+
+    if (userMessageContent === '') return;
+
+    const userMessage = document.createElement('div');
+    userMessage.classList.add('message');
+    userMessage.innerHTML = `<div class="user">${userMessageContent}</div>`;
+
+    chatBox.appendChild(userMessage);
+    messageInput.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    handleCommand(userMessageContent, chatBox);
+
+    }
+
+    function handleCommand(content, chatBox) {
+    // // 判決命令：の処理
+    // if (userMessageContent.startsWith("判決命令：")) {
+    //     const command = userMessageContent.slice(5); // 判決命令：を取り除く
+         if (content.startsWith("判決命令：")) {
+            const command = content.slice(5);
+
+        // 例: 足し算の処理
+        if (command.startsWith("計算足し算")) {
+            const match = command.match(/(\d+)\+(\d+)/);
+            if (match) {
+                const num1 = parseInt(match[1], 10);
+                const num2 = parseInt(match[2], 10);
+                const sum = num1 + num2;
+                setTimeout(() => {
+                    const botMessage = document.createElement('div');
+                    botMessage.classList.add('message');
+                    botMessage.innerHTML = `<div class="bot">執行宣言: 答え${sum}です。</div>`;
+                    chatBox.appendChild(botMessage);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1000);
                 return;
             }
-            friends.push(friendUsername);
-            updateFriendsList();
         }
-    
-        function updateFriendsList() {
-            const friendsList = document.getElementById('friendsList');
-            friendsList.innerHTML = '';
-            friends.forEach(friend => {
-                const listItem = document.createElement('li');
-                listItem.innerText = friend;
-                friendsList.appendChild(listItem);
-            });
-        }
-    </script>
-    
 
-    <script>
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const chatBox = document.getElementById('chatBox');
-            
-            if (messageInput.value.trim() === '') return;
-            
-            const userMessage = document.createElement('div');
-            userMessage.classList.add('message');
-            userMessage.innerHTML = `<div class="user">${messageInput.value}</div>`;
-            
-            chatBox.appendChild(userMessage);
-            messageInput.value = '';
-            
+        // 他の判決命令に関する処理
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`;
+            chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
-            
-            setTimeout(() => {
-                const botMessage = document.createElement('div');
-                botMessage.classList.add('message');
-                botMessage.innerHTML = `<div class="bot">すぐにお手伝いします！</div>`;
-                
-                chatBox.appendChild(botMessage);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 1000);
-        }
+        }, 1000);
+    } else if (userMessageContent === "判決命令：新規登録") {
+        document.getElementById('registrationForm').style.display = 'block';
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            chatBox.appendChild(botMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+    } else if (userMessageContent === "判決命令：交換した友達") {
+        document.getElementById('friendList').style.display = 'block';
+        addFriend("友達1");
+        addFriend("友達2");
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            chatBox.appendChild(botMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+    } else {
+        // 一般的なメッセージ処理
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            botMessage.innerHTML = `<div class="bot">すぐにお手伝いします！</div>`;
+            chatBox.appendChild(botMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+    }
+}
 
-        function handleKeyDown(event) {
-            // Shift + A が押された場合
-            if (event.shiftKey && event.key === 'A') {
-                const messageInput = document.getElementById('messageInput');
-                messageInput.focus(); // メッセージ入力フィールドにフォーカスを当てる
-            }
-            // // エンターキーが押されたとき（シフトキーなし）
-            // if (event.key === 'Enter' && !event.shiftKey) {
-            //     sendMessage();
-            // }
-            // function handleKeyDown(event) {
-            // Shift + Enter が押された場合
-            if (event.key === 'Enter' && event.shiftKey) {
-                sendMessage(); // メッセージを送信する
-            }
-        }
+    
 
-        // ページのどこでもタップしたらメッセージ入力欄にフォーカスを当てる
-        function focusInput(event) {
+    // キー入力処理
+    function handleKeyDown(event) {
+        if (event.key === 'Enter' && event.shiftKey) {
+            sendMessage(); // Shift+Enterで送信
+        }
+    }
+
+    // ページのどこでもタップしたらメッセージ入力欄にフォーカスを当てる
+    function focusInput(event) {
             const messageInput = document.getElementById('messageInput');
             // メッセージ入力欄以外をクリックした場合は、入力欄にフォーカスを当てる
             if (!messageInput.contains(event.target)) {
                 messageInput.focus();
             }
         }
-    </script>
+
+
+
+
+
+    // アカウント登録処理
+    function registerAccount() {
+        const username = document.getElementById('newUsername').value;
+        const password = document.getElementById('newPassword').value;
+
+        if (!username || !password) {
+            alert('ユーザー名とパスワードを入力してください');
+            return;
+        }
+
+        // アカウント情報を保存（ここでは仮の処理）
+        currentUser = username;
+        document.getElementById('registrationForm').style.display = 'none';
+        alert('登録が完了しました！');
+    }
+
+    // 友達リストに友達追加
+    function addFriend(friendName) {
+        friends.push(friendName);
+        updateFriendList();
+    }
+
+    // 友達リストを更新
+    function updateFriendList() {
+        const friendListUL = document.getElementById('friendListUL');
+        friendListUL.innerHTML = '';
+        friends.forEach(friend => {
+            const li = document.createElement('li');
+            li.innerText = friend;
+            friendListUL.appendChild(li);
+        });
+    }
+
+    // チャット開始
+    function startChat() {
+        alert('選択した友達とのやり取りを開始します！');
+    }
+
+
+
+     function startSpeechRecognition() {
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ja-JP';
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                sendMessage(transcript); // 音声入力を送信
+            };
+
+            recognition.start();
+        } else {
+            alert('お使いのブラウザは音声認識をサポートしていません。');
+        }
+    }
+
+    function addFriend(friendName) {
+        friends.push(friendName);
+    }
+</script>
 
 </body>
 </html>
