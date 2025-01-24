@@ -81,11 +81,31 @@
         .input-box button:hover {
             background-color: #008f00;
         }
+
+
+                #textToSpeak {
+            display: none;
+            width: 100%; /* テキストエリア全幅 */
+            box-sizing: border-box; /* 幅にpaddingとborderを含める */
+        }
+
+        #loading {
+            display: none;
+            font-style: italic;
+        }
+
+        #output {
+            font-size: 24px;
+            font-family: monospace;
+        }
+
     </style>
 </head>
 <body>
 
-<div class="chat-container" onclick="focusInput(event)">
+<!-- <div class="chat-container"　onclick="switchToTextareaAndStartRecognition()" onclick="focusInput(event)"> -->
+<div class="chat-container" onclick="switchToTextareaAndStartRecognition(); focusInput(event);">
+
     <div class="header">
         <span>KS-903SNS チャット</span>
     </div>
@@ -99,8 +119,10 @@
                 <div class="bot">【判決命令：友達やりとり】と入力してアカウントを行ってください！？</div>
             </div>
         </div>
-    <div class="input-box">
-        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+    <div class="input-box"　>
+        <input type="text" id="messageInput" class="text-to-speak output loading"　placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+                <div class="output">ここに音声認識結果が表示されます。</div>
+        <div class="loading">Listening...</div>
         <button onclick="sendMessage()">送信</button>
     </div>
 
@@ -267,5 +289,74 @@ function sendMessage() {
     }
 </script>
 
+
+
+
+    
+    <script>
+        let recognition; // 音声認識を制御する変数
+        const inputElement = document.querySelector('.text-to-speak');
+        const outputElement = document.querySelector('.output');
+        const loadingElement = document.querySelector('.loading');
+
+        // クラス操作
+        inputElement.classList.add('new-class'); // 新しいクラスを追加
+        inputElement.classList.remove('loading'); // クラスを削除
+        inputElement.classList.toggle('active'); // クラスをトグル
+        if (inputElement.classList.contains('output')) {
+            console.log('Output クラスが存在します');
+        }
+
+        // 音声認識の初期化とスタート
+        function startSpeechRecognition() {
+            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'ja-JP'; // 日本語に設定
+                recognition.continuous = false; // 一度の認識で終了
+
+                // 音声認識結果
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    outputElement.textContent = transcript; // 結果を表示
+                    inputElement.value = transcript; // 入力欄に反映
+                };
+
+                // エラー処理
+                recognition.onerror = function(event) {
+                    console.error('エラー:', event.error);
+                };
+
+                // 認識開始時
+                recognition.onstart = function() {
+                    loadingElement.style.display = 'block'; // ローディング表示
+                };
+
+                // 認識終了時
+                recognition.onend = function() {
+                    loadingElement.style.display = 'none'; // ローディング非表示
+                    console.log('音声認識が終了しました');
+                };
+
+                recognition.start(); // 音声認識開始
+            } else {
+                alert('このブラウザは音声認識をサポートしていません');
+            }
+        }
+
+        // 音声認識を停止
+        function stopSpeechRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+
+        // ボタンを押したときにUIを切り替え音声認識を開始
+        function switchToTextareaAndStartRecognition() {
+            startSpeechRecognition(); // 音声認識開始
+            document.querySelector('button').style.display = 'none'; // ボタンを非表示
+            inputElement.classList.add('active'); // 入力欄にクラスを追加
+        }
+
+    </script>
 </body>
 </html>
