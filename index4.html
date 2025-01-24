@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KS-903SNS画面</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: 100vh;
+        }
+        .header {
+            background-color: #00b900;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .chat-box {
+            padding: 20px;
+            height: calc(100vh - 150px);
+            overflow-y: scroll;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message .user {
+            align-self: flex-start;
+            background-color: #e1e1e1;
+            border-radius: 15px;
+            padding: 10px;
+            max-width: 70%;
+        }
+        .message .bot {
+            align-self: flex-end;
+            background-color: #00b900;
+            color: white;
+            border-radius: 15px;
+            padding: 10px;
+            max-width: 70%;
+        }
+        .input-box {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-top: 1px solid #ddd;
+        }
+        .input-box input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-box button {
+            background-color: #00b900;
+            color: white;
+            padding: 10px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .input-box button:hover {
+            background-color: #008f00;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <span>KS-903SNS チャット</span>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="message">
+            <div class="user">How To USER！</div>
+        </div>
+        <div class="message">
+            <div class="bot">【判決命令：友達やりとり】と入力してアカウントを行ってください！？</div>
+        </div>
+    </div>
+
+    <div class="input-box">
+        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+        <button onclick="sendMessage()">送信</button>
+        <button onclick="startSpeechRecognition()">🎤</button>
+    </div>
+</div>
+
+<script>
+    let recognition;
+
+    // メッセージ送信機能
+    function sendMessage(message = null) {
+        const messageInput = document.getElementById('messageInput');
+        const chatBox = document.getElementById('chatBox');
+
+        const userMessageContent = message || messageInput.value.trim();
+        if (userMessageContent === '') return;
+
+        const userMessage = document.createElement('div');
+        userMessage.classList.add('message');
+        userMessage.innerHTML = `<div class="user">${userMessageContent}</div>`;
+
+        chatBox.appendChild(userMessage);
+        messageInput.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        handleCommand(userMessageContent, chatBox);
+    }
+
+    function handleCommand(content, chatBox) {
+        if (content.startsWith("判決命令：")) {
+            const command = content.slice(5);
+
+            if (command.startsWith("計算足し算")) {
+                const match = command.match(/(\d+)\+(\d+)/);
+                if (match) {
+                    const num1 = parseInt(match[1], 10);
+                    const num2 = parseInt(match[2], 10);
+                    const sum = num1 + num2;
+                    respond(`執行宣言: 答え ${sum} です。`, chatBox);
+                    return;
+                }
+            }
+
+            respond(`執行宣言: ${content}`, chatBox);
+        } else {
+            respond("すぐにお手伝いします！", chatBox);
+        }
+    }
+
+    function respond(message, chatBox) {
+        setTimeout(() => {
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('message');
+            botMessage.innerHTML = `<div class="bot">${message}</div>`;
+            chatBox.appendChild(botMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 1000);
+    }
+
+    // 音声認識
+    function startSpeechRecognition() {
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ja-JP';
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                const messageInput = document.getElementById('messageInput');
+                messageInput.value = transcript; // 入力欄に表示
+
+                // 2秒後に送信ボタンを自動で押す
+                setTimeout(() => {
+                    sendMessage(transcript);
+                }, 2000);
+            };
+
+            recognition.start();
+        } else {
+            alert('お使いのブラウザは音声認識をサポートしていません。');
+        }
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+</script>
+
+</body>
+</html>
