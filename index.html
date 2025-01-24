@@ -122,7 +122,8 @@
     </div>
 </div>
 
-<script>  
+<script>
+ 
  let friends = [];
 let currentUser = null;
 
@@ -131,8 +132,7 @@ function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const chatBox = document.getElementById('chatBox');
 
-    const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
-
+    const userMessageContent = messageInput.value.trim(); // 入力されたメッセージを一時保存
 
     if (userMessageContent === '') return;
 
@@ -144,16 +144,9 @@ function sendMessage() {
     messageInput.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    handleCommand(userMessageContent, chatBox);
-
-    }
-
-    function handleCommand(content, chatBox) {
-    // // 判決命令：の処理
-    // if (userMessageContent.startsWith("判決命令：")) {
-    //     const command = userMessageContent.slice(5); // 判決命令：を取り除く
-         if (content.startsWith("判決命令：")) {
-            const command = content.slice(5);
+    // 判決命令：の処理
+    if (userMessageContent.startsWith("判決命令：")) {
+        const command = userMessageContent.slice(5); // 判決命令：を取り除く
 
         // 例: 足し算の処理
         if (command.startsWith("計算足し算")) {
@@ -272,9 +265,6 @@ function sendMessage() {
     function startChat() {
         alert('選択した友達とのやり取りを開始します！');
     }
-
-
-
 </script>
 
 </body>
