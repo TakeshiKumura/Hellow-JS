@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="本作品は瞬時に翻訳するツールです">
+    <meta name="google-site-verification" content="fOjW3MRfRrboCfSklNZahSJDP-FXTyVvR9pYjbs3aFI" />
+    <title>国境なき Talking - 翻訳ツール</title>
+    <style>
+        /* Your styles here */
+    </style>
+</head>
+
+<body>
+    
+    <style>
+        #output {
+            font-size: 24px;
+            font-family: monospace;
+        }
+
+        #textToSpeak {
+            display: none;
+            width: 100%; /* テキストエリア全幅 */
+            box-sizing: border-box; /* 幅にpaddingとborderを含める */
+        }
+
+        #loading {
+            display: none;
+            font-style: italic;
+        }
+
+        #startButton {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="startButton" onclick="switchToTextareaAndStartRecognition()">ようこそこれから始める</button>
+    <textarea id="textToSpeak" rows="1" placeholder="フランス語か日本語を入力または喋ってください" onkeydown="handleKeyDwn()"></textarea>
+
+    <br>
+    <div id="output" >
+      <!-- style="white-space: pre-line; padding: 10px; border: 1px solid #ccc;"> -->
+    </div>
+    
+    <div id="loading">Translating...</div>
+
+<script>
+　　　　let recognition; // Declare recognition variable globally
+
+document.addEventListener('DOMContentLoaded', function () {
+    // 初回の speak() コールは不要
+    // speak();
+});
+
+function handleKeyDwn() {
+if (event.key === 'Enter') {
+const entext = document.getElementById("textToSpeak").value;
+const detectedLanguage = detectLanguage(entext);
+
+// 翻訳を行う
+if (detectedLanguage === 'FR') {
+    output('FR', 'JA', entext)
+        .then((translatedText) => {
+            animateText(0, translatedText);
+            speak(translatedText); // Call speak after translation
+        })
+        .catch((error) => {
+            console.error("Translation Error:", error);
+        });
+} else if (detectedLanguage === 'JA') {
+    output('JA', 'FR', entext)
+        .then((translatedText) => {
+            animateText(0, translatedText);
+            speak(translatedText); // Call speak after translation
+        })
+        .catch((error) => {
+            console.error("Translation Error:", error);
+        });
+}
+}
+}
+
+
+const API_KEY = '323d233d-1742-1086-c8b6-181a195cb6d3:fx';
+const API_URL = 'https://api-free.deepl.com/v2/translate';
+
+// // output 関数を Promise でラップ
+// function output(sourceLang, targetLang, text) {
+//     return new Promise((resolve, reject) => {
+//         const data = new URLSearchParams();
+//         data.append('auth_key', API_KEY);
+//         data.append('text', text);
+//         data.append('source_lang', sourceLang);
+//         data.append('target_lang', targetLang);
+
+//         fetch(API_URL, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/x-www-form-urlencoded',
+//             },
+//             body: data,
+//         })
+//             .then(function (response) {
+//                 if (response.ok) {
+//                     return response.json();
+//                 } else {
+//                     throw new Error("Could not reach the API: " + response.statusText);
+//                 }
+//             }).then(function (data) {
+//                 resolve(data.translations[0].text);
+//             }).catch(function (error) {
+//                 reject(error);
+//             });
+//     });
+// }
+function output(sourceLang, targetLang, text) {
+return new Promise((resolve, reject) => {
+const words = text.split(/\s+/); // Split the input text into words
+
+const translations = [];
+let completedTranslations = 0;
+
+words.forEach((word, index) => {
+    const data = new URLSearchParams();
+    data.append('auth_key', API_KEY);
+    data.append('text', word);
+    data.append('source_lang', sourceLang);
+    data.append('target_lang', targetLang);
+
+    fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: data,
+    })
+        .then(function (response) {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Could not reach the API: " + response.statusText);
+            }
+        }).then(function (data) {
+            translations[index] = data.translations[0].text;
+            completedTranslations++;
+
+            if (completedTranslations === words.length) {
+                // All translations are complete
+                const translatedText = translations.join(' ').replace(/\s+/g, ' ');
+                resolve(translatedText);
+            }
+        }).catch(function (error) {
+            reject(error);
+        });
+});
+});
+}
+
+
+
+function detectLanguage(text) {
+    const japaneseRegex = /[\u3040-\u30FF\u31F0-\u31FF\u4E00-\u9FAF\u3400-\u4DBF]/;
+    const englishRegex = /[a-zA-Z]/;
+
+    if (englishRegex.test(text)) {
+        return 'FR';
+    } else if (japaneseRegex.test(text)) {
+        return 'JA';
+    } else {
+        return 'FR';
+    }
+}
+
+function speak(textToSpeak) {
+    const detectedLanguage = detectLanguage(textToSpeak);
+
+    if ('speechSynthesis' in window) {
+        const synthesis = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = detectedLanguage;
+
+        synthesis.speak(utterance);
+    }
+}
+
+function animateText(index, originalText) {
+    const outputElement = document.getElementById("output");
+
+    // if (index < originalText.length) {
+    //     outputElement.innerText += originalText[index];
+    
+    if (index < originalText.length) {
+        // Add a space after each character
+        outputElement.innerText += originalText[index] + ' ';
+
+
+        setTimeout(function () {
+            animateText(index + 1, originalText);
+        }, 100);
+    } else {
+        document.getElementById("textToSpeak").value = '';
+        setTimeout(function () {
+            outputElement.textContent = '';
+            startSpeechRecognition();
+        }, 800);
+    }
+}
+
+function startSpeechRecognition() {
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.lang = ['ja-JP', 'fr-FR'];
+        //recognition.lang = ['ja-JP', 'fr-FR', 'fr-FR', 'de-DE', 'es-ES', 'it-IT', 'pt-BR', 'zh-CN', 'ru-RU', 'pt-PT'];
+
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+
+            document.getElementById("textToSpeak").value = transcript;
+            simulateEnterKeyPress();
+        };
+
+        recognition.onerror = function (event) {
+            // alert('Speech recognition error: ' + event.error);
+            
+        };
+
+        recognition.onstart = function () {
+            document.getElementById('loading').style.display = 'block';
+        };
+
+        recognition.onend = function () {
+            document.getElementById('loading').style.display = 'none';
+            startSpeechRecognition(); // 音声認識が終了したら再度開始
+        };
+
+        recognition.start();
+    } else {
+        alert('Speech Recognition is not supported in this browser.');
+    }
+}
+
+function stopSpeechRecognition() {
+    if (recognition && recognition.running) {
+        recognition.stop();
+    }
+}
+
+function switchToTextareaAndStartRecognition() {
+    startSpeechRecognition();
+    switchToTextarea();
+}
+
+function switchToTextarea() {
+    document.querySelector('button').style.display = 'none';
+    document.getElementById('textToSpeak').style.display = 'block';
+}
+
+function simulateEnterKeyPress() {
+    const event = new KeyboardEvent('keydown', { 'key': 'Enter' });
+    document.getElementById("textToSpeak").dispatchEvent(event);
+    stopSpeechRecognition();
+}
+</script>
+   
+
+
+
+
+   
+</body>
+
+</html>
+音声認識だけにする
