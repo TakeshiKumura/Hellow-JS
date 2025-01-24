@@ -99,7 +99,7 @@
             </div>
         </div>
     <div class="input-box">
-        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+        <input type="text" id="messageInput" placeholder="メッセージを入力..." onclick="startSpeechRecognition()" onkeydown="handleKeyDown(event)">
         <button onclick="sendMessage()">送信</button>
     </div>
 
@@ -122,7 +122,7 @@
 </div>
 
 <script>
- 
+ let recognition;   
  let friends = [];
 let currentUser = null;
 
@@ -131,7 +131,8 @@ function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const chatBox = document.getElementById('chatBox');
 
-    const userMessageContent = messageInput.value.trim(); // 入力されたメッセージを一時保存
+    const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
+
 
     if (userMessageContent === '') return;
 
@@ -143,9 +144,16 @@ function sendMessage() {
     messageInput.value = '';
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    // 判決命令：の処理
-    if (userMessageContent.startsWith("判決命令：")) {
-        const command = userMessageContent.slice(5); // 判決命令：を取り除く
+    handleCommand(userMessageContent, chatBox);
+
+    }
+
+    function handleCommand(content, chatBox) {
+    // // 判決命令：の処理
+    // if (userMessageContent.startsWith("判決命令：")) {
+    //     const command = userMessageContent.slice(5); // 判決命令：を取り除く
+         if (content.startsWith("判決命令：")) {
+            const command = content.slice(5);
 
         // 例: 足し算の処理
         if (command.startsWith("計算足し算")) {
@@ -263,6 +271,28 @@ function sendMessage() {
     // チャット開始
     function startChat() {
         alert('選択した友達とのやり取りを開始します！');
+    }
+
+
+
+     function startSpeechRecognition() {
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'ja-JP';
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                sendMessage(transcript); // 音声入力を送信
+            };
+
+            recognition.start();
+        } else {
+            alert('お使いのブラウザは音声認識をサポートしていません。');
+        }
+    }
+
+    function addFriend(friendName) {
+        friends.push(friendName);
     }
 </script>
 
