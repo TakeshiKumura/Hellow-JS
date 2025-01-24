@@ -85,7 +85,7 @@
 
                 #textToSpeak {
             display: none;
-            width: 100%; /* テキストエリア全幅 */
+            
             box-sizing: border-box; /* 幅にpaddingとborderを含める */
         }
 
@@ -95,7 +95,6 @@
         }
 
         #output {
-            font-size: 24px;
             font-family: monospace;
         }
 
@@ -104,7 +103,7 @@
 <body>
 
 <!-- <div class="chat-container"　onclick="switchToTextareaAndStartRecognition()" onclick="focusInput(event)"> -->
-<div class="chat-container" onclick=" focusInput(event);">
+<div class="chat-container" onclick=" 　onclick="switchToTextareaAndStartRecognition(); focusInput(event);">
 
     <div class="header">
         <span>KS-903SNS チャット</span>
