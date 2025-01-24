@@ -100,7 +100,7 @@
             </div>
         </div>
     <div class="input-box">
-        <input type="text" id="messageInput" placeholder="メッセージを入力..." onclick="startSpeechRecognition()" onkeydown="handleKeyDown(event)">
+        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
         <button onclick="sendMessage()">送信</button>
     </div>
 
@@ -122,8 +122,7 @@
     </div>
 </div>
 
-<script>
- let recognition;   
+<script>  
  let friends = [];
 let currentUser = null;
 
@@ -276,25 +275,6 @@ function sendMessage() {
 
 
 
-     function startSpeechRecognition() {
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'ja-JP';
-
-            recognition.onresult = function (event) {
-                const transcript = event.results[0][0].transcript;
-                sendMessage(transcript); // 音声入力を送信
-            };
-
-            recognition.start();
-        } else {
-            alert('お使いのブラウザは音声認識をサポートしていません。');
-        }
-    }
-
-    function addFriend(friendName) {
-        friends.push(friendName);
-    }
 </script>
 
 </body>
