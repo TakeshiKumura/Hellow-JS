@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="音声認識のみの翻訳ツール">
+    <title>音声認識翻訳ツール</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #output {
+            margin-top: 20px;
+            font-size: 24px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            white-space: pre-line;
+        }
+
+        #loading {
+            font-style: italic;
+            display: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>音声認識翻訳ツール</h1>
+    <button id="startButton" onclick="startSpeechRecognition()">音声認識を開始</button>
+    <button id="stopButton" onclick="stopSpeechRecognition()" style="display:none;">音声認識を停止</button>
+
+    <div id="loading">認識中...</div>
+    <div id="output">翻訳されたテキストがここに表示されます</div>
+
+    <script>
+        let recognition;
+
+        function startSpeechRecognition() {
+            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.lang = 'ja-JP';
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById("output").innerText = transcript;
+                    document.getElementById('loading').style.display = 'none';
+                };
+
+                recognition.onerror = function (event) {
+                    console.error('Speech recognition error:', event.error);
+                    document.getElementById('loading').style.display = 'none';
+                };
+
+                recognition.onstart = function () {
+                    document.getElementById('loading').style.display = 'block';
+                    document.getElementById('startButton').style.display = 'none';
+                    document.getElementById('stopButton').style.display = 'inline';
+                };
+
+                recognition.onend = function () {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('startButton').style.display = 'inline';
+                    document.getElementById('stopButton').style.display = 'none';
+                };
+
+                recognition.start();
+            } else {
+                alert('お使いのブラウザは音声認識をサポートしていません。');
+            }
+        }
+
+        function stopSpeechRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+    </script>
+</body>
+
+</html>
