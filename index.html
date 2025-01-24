@@ -116,8 +116,6 @@
         </div>
     <div class="input-box">
 
-<input type="text" id="textToSpeak">
-<div id="output"></div>
 <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
 
 <!--         <input type="text" id="textToSpeak"<div id="output"></div>
@@ -146,7 +144,10 @@
 <script>
  let friends = [];
 let currentUser = null;
-
+// 元の要素からデータを統合
+  document.getElementById('messageInput').value = 
+    document.getElementById('textToSpeak')?.value || '' + 
+    document.getElementById('output')?.innerText || '';
 // メッセージ送信機能
 function sendMessage(message = null) {
     const messageInput = document.getElementById('messageInput');
