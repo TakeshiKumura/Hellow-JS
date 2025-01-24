@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KS-903SNS画面</title>
     <style>
-        }
-
         #loading {
             display: none;
             font-style: italic;
@@ -20,7 +18,7 @@
          #output {
             font-size: 24px;
             font-family: monospace;
-        }
+         }
 
         
                body {
@@ -117,9 +115,14 @@
             </div>
         </div>
     <div class="input-box">
-        <input type="text" id="textToSpeak"<div id="output"></div>
+
+<input type="text" id="textToSpeak">
+<div id="output"></div>
+<input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+
+<!--         <input type="text" id="textToSpeak"<div id="output"></div>
     <div id="loading">Listening...</div>　id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
-        <button onclick="sendMessage()">送信</button>
+        <button onclick="sendMessage()">送信</button> -->
     </div>
 
     <!-- 新規登録フォーム -->
@@ -146,11 +149,17 @@
 let currentUser = null;
 
 // メッセージ送信機能
-function sendMessage() {
+function sendMessage(message = null) {
     const messageInput = document.getElementById('messageInput');
     const chatBox = document.getElementById('chatBox');
 
-    const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
+    const userMessageContent = message || messageInput.value.trim();
+
+// function sendMessage() {
+//     const messageInput = document.getElementById('messageInput');
+//     const chatBox = document.getElementById('chatBox');
+
+//     const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
 
 
     if (userMessageContent === '') return;
@@ -196,7 +205,8 @@ function sendMessage() {
         setTimeout(() => {
             const botMessage = document.createElement('div');
             botMessage.classList.add('message');
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`;
+            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`;
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
         }, 1000);
@@ -205,7 +215,8 @@ function sendMessage() {
         setTimeout(() => {
             const botMessage = document.createElement('div');
             botMessage.classList.add('message');
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
         }, 1000);
@@ -216,7 +227,8 @@ function sendMessage() {
         setTimeout(() => {
             const botMessage = document.createElement('div');
             botMessage.classList.add('message');
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
+            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
             chatBox.appendChild(botMessage);
             chatBox.scrollTop = chatBox.scrollHeight;
         }, 1000);
