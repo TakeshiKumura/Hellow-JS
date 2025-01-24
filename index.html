@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KS-903SNS画面</title>
     <style>
+        }
+
+        #loading {
+            display: none;
+            font-style: italic;
+        }
+
+        #startButton {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+         #output {
+            font-size: 24px;
+            font-family: monospace;
+        }
+
+        
                body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -93,13 +111,14 @@
             <!-- メッセージがここに追加されます -->
             <div class="message">
                 <div class="user">How To USER！</div>
-            </div>出会た
+            </div>
             <div class="message">
                 <div class="bot">【判決命令：友達やりとり】と入力してアカウントを行ってください！？</div>
             </div>
         </div>
     <div class="input-box">
-        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+        <input type="text" id="textToSpeak"<div id="output"></div>
+    <div id="loading">Listening...</div>　id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
         <button onclick="sendMessage()">送信</button>
     </div>
 
@@ -294,6 +313,55 @@ function sendMessage() {
     function addFriend(friendName) {
         friends.push(friendName);
     }
+
+
+    let recognition; // Declare recognition variable globally
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialization code if needed
+        });
+
+        function startSpeechRecognition() {
+            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.lang = 'ja-JP'; // Set to Japanese language by default
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById("output").innerText = transcript;
+                };
+
+                recognition.onerror = function (event) {
+                    console.error('Speech recognition error:', event.error);
+                };
+
+                recognition.onstart = function () {
+                    document.getElementById('loading').style.display = 'block';
+                };
+
+                recognition.onend = function () {
+                    document.getElementById('loading').style.display = 'none';
+                    startSpeechRecognition(); // Restart recognition when it ends
+                };
+
+                recognition.start();
+            } else {
+                alert('Speech Recognition is not supported in this browser.');
+            }
+        }
+
+        function stopSpeechRecognition() {
+            if (recognition && recognition.running) {
+                recognition.stop();
+            }
+        }
+
+        function switchToTextareaAndStartRecognition() {
+            startSpeechRecognition();
+            document.querySelector('button').style.display = 'none';
+            document.getElementById('textToSpeak').style.display = 'block';
+        }
 </script>
 
 </body>
