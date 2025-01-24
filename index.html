@@ -5,23 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KS-903SNS画面</title>
     <style>
-        #loading {
-            display: none;
-            font-style: italic;
-        }
-
-        #startButton {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-        }
-         #output {
-            font-size: 24px;
-            font-family: monospace;
-         }
-
-        
-               body {
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
@@ -46,28 +30,8 @@
         }
         .chat-box {
             padding: 20px;
-            height: calc(100vh - 150px);
+            height: calc(100vh - 250px);
             overflow-y: scroll;
-        }
-        .message {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-        .message .user {
-            align-self: flex-start;
-            background-color: #e1e1e1;
-            border-radius: 15px;
-            padding: 10px;
-            max-width: 70%;
-        }
-        .message .bot {
-            align-self: flex-end;
-            background-color: #00b900;
-            color: white;
-            border-radius: 15px;
-            padding: 10px;
-            max-width: 70%;
         }
         .input-box {
             display: flex;
@@ -96,283 +60,108 @@
         .input-box button:hover {
             background-color: #008f00;
         }
+        #output {
+            font-size: 24px;
+            font-family: monospace;
+            padding: 10px;
+            background-color: #e0ffe0;
+            border-radius: 10px;
+            margin: 10px;
+            word-wrap: break-word;
+        }
+        #loading {
+            display: none;
+            font-style: italic;
+            color: #666;
+            text-align: center;
+        }
+        #textToSpeak {
+            display: none;
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
 
-<div class="chat-container" onclick="focusInput(event)">
-    <div class="header">
-        <span>KS-903SNS チャット</span>
+<div class="chat-container">
+    <div class="header">KS-903SNS チャット</div>
+    <div class="chat-box" id="chatBox">
+        <!-- メッセージがここに表示されます -->
     </div>
- 
-        <div class="chat-box" id="chatBox">
-            <!-- メッセージがここに追加されます -->
-            <div class="message">
-                <div class="user">How To USER！</div>
-            </div>
-            <div class="message">
-                <div class="bot">【判決命令：友達やりとり】と入力してアカウントを行ってください！？</div>
-            </div>
-        
 
-</div>
+    <div id="output">ここに音声認識結果が表示されます。</div>
+    <div id="loading">音声認識中...</div>
+
+    <textarea id="textToSpeak" placeholder="音声認識内容を編集できます..."></textarea>
+
     <div class="input-box">
-        <input type="text" id="messageInput" placeholder="メッセージを入力..." onclick="startSpeechRecognition()" onkeydown="handleKeyDown(event)">
-        <button onclick="sendMessage()">送信</button>
-    </div>
-
-
-    <!-- 新規登録フォーム -->
-    <div class="registration-form" id="registrationForm">
-        <h2>新規登録</h2>
-        <input type="text" id="newUsername" placeholder="ユーザー名">
-        <input type="password" id="newPassword" placeholder="パスワード">
-        <button onclick="registerAccount()">登録</button>
-    </div>
-
-    <!-- 友達リストフォーム -->
-    <div class="friend-list" id="friendList">
-        <h2>交換した友達</h2>
-        <ul id="friendListUL">
-            <!-- 友達リストがここに表示されます -->
-        </ul>
-        <button onclick="startChat()">選択してやり取り開始</button>
+        <input type="text" id="messageInput" placeholder="メッセージを入力..." onkeydown="handleKeyDown(event)">
+        <button onclick="switchToTextareaAndStartRecognition()">音声入力開始</button>
     </div>
 </div>
 
 <script>
- let friends = [];
-let currentUser = null;
-// 元の要素からデータを統合
-  document.getElementById('messageInput').value = 
-    document.getElementById('textToSpeak')?.value || '' + 
-    document.getElementById('output')?.innerText || '';
-// メッセージ送信機能
-function sendMessage(message = null) {
-    const messageInput = document.getElementById('messageInput');
-    const chatBox = document.getElementById('chatBox');
+    let recognition;
 
-    const userMessageContent = message || messageInput.value.trim();
-
-// function sendMessage() {
-//     const messageInput = document.getElementById('messageInput');
-//     const chatBox = document.getElementById('chatBox');
-
-//     const userMessageContent = message ||  messageInput.value.trim(); // 入力されたメッセージを一時保存入力内容または音声入力を取得
-
-
-    if (userMessageContent === '') return;
-
-    const userMessage = document.createElement('div');
-    userMessage.classList.add('message');
-    userMessage.innerHTML = `<div class="user">${userMessageContent}</div>`;
-
-    chatBox.appendChild(userMessage);
-    messageInput.value = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    handleCommand(userMessageContent, chatBox);
-
-    }
-
-    function handleCommand(content, chatBox) {
-    // // 判決命令：の処理
-    // if (userMessageContent.startsWith("判決命令：")) {
-    //     const command = userMessageContent.slice(5); // 判決命令：を取り除く
-         if (content.startsWith("判決命令：")) {
-            const command = content.slice(5);
-
-        // 例: 足し算の処理
-        if (command.startsWith("計算足し算")) {
-            const match = command.match(/(\d+)\+(\d+)/);
-            if (match) {
-                const num1 = parseInt(match[1], 10);
-                const num2 = parseInt(match[2], 10);
-                const sum = num1 + num2;
-                setTimeout(() => {
-                    const botMessage = document.createElement('div');
-                    botMessage.classList.add('message');
-                    botMessage.innerHTML = `<div class="bot">執行宣言: 答え${sum}です。</div>`;
-                    chatBox.appendChild(botMessage);
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }, 1000);
-                return;
-            }
-        }
-
-        // 他の判決命令に関する処理
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.classList.add('message');
-            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`;
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
-            chatBox.appendChild(botMessage);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 1000);
-    } else if (userMessageContent === "判決命令：新規登録") {
-        document.getElementById('registrationForm').style.display = 'block';
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.classList.add('message');
-            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
-            chatBox.appendChild(botMessage);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 1000);
-    } else if (userMessageContent === "判決命令：交換した友達") {
-        document.getElementById('friendList').style.display = 'block';
-        addFriend("友達1");
-        addFriend("友達2");
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.classList.add('message');
-            // botMessage.innerHTML = `<div class="bot">執行宣言: ${userMessageContent}</div>`; // 一時保存した値を使用
-            botMessage.innerHTML = `<div class="bot">執行宣言: ${content}</div>`;
-            chatBox.appendChild(botMessage);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 1000);
-    } else {
-        // 一般的なメッセージ処理
-        setTimeout(() => {
-            const botMessage = document.createElement('div');
-            botMessage.classList.add('message');
-            botMessage.innerHTML = `<div class="bot">すぐにお手伝いします！</div>`;
-            chatBox.appendChild(botMessage);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 1000);
-    }
-}
-
-    
-
-    // キー入力処理
-    function handleKeyDown(event) {
-        if (event.key === 'Enter' && event.shiftKey) {
-            sendMessage(); // Shift+Enterで送信
-        }
-    }
-
-    // ページのどこでもタップしたらメッセージ入力欄にフォーカスを当てる
-    function focusInput(event) {
-            const messageInput = document.getElementById('messageInput');
-            // メッセージ入力欄以外をクリックした場合は、入力欄にフォーカスを当てる
-            if (!messageInput.contains(event.target)) {
-                messageInput.focus();
-            }
-        }
-
-
-
-
-
-    // アカウント登録処理
-    function registerAccount() {
-        const username = document.getElementById('newUsername').value;
-        const password = document.getElementById('newPassword').value;
-
-        if (!username || !password) {
-            alert('ユーザー名とパスワードを入力してください');
-            return;
-        }
-
-        // アカウント情報を保存（ここでは仮の処理）
-        currentUser = username;
-        document.getElementById('registrationForm').style.display = 'none';
-        alert('登録が完了しました！');
-    }
-
-    // 友達リストに友達追加
-    function addFriend(friendName) {
-        friends.push(friendName);
-        updateFriendList();
-    }
-
-    // 友達リストを更新
-    function updateFriendList() {
-        const friendListUL = document.getElementById('friendListUL');
-        friendListUL.innerHTML = '';
-        friends.forEach(friend => {
-            const li = document.createElement('li');
-            li.innerText = friend;
-            friendListUL.appendChild(li);
-        });
-    }
-
-    // チャット開始
-    function startChat() {
-        alert('選択した友達とのやり取りを開始します！');
-    }
-
-
-
-     function startSpeechRecognition() {
+    function startSpeechRecognition() {
         if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
             recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
             recognition.lang = 'ja-JP';
 
             recognition.onresult = function (event) {
                 const transcript = event.results[0][0].transcript;
-                sendMessage(transcript); // 音声入力を送信
+                document.getElementById("output").innerText = transcript;
+                document.getElementById("textToSpeak").value = transcript;
+            };
+
+            recognition.onerror = function (event) {
+                console.error('Speech recognition error:', event.error);
+            };
+
+            recognition.onstart = function () {
+                document.getElementById('loading').style.display = 'block';
+            };
+
+            recognition.onend = function () {
+                document.getElementById('loading').style.display = 'none';
             };
 
             recognition.start();
         } else {
-            alert('お使いのブラウザは音声認識をサポートしていません。');
+            alert('このブラウザは音声認識をサポートしていません。');
         }
     }
 
-    function addFriend(friendName) {
-        friends.push(friendName);
+    function stopSpeechRecognition() {
+        if (recognition) {
+            recognition.stop();
+        }
     }
 
+    function switchToTextareaAndStartRecognition() {
+        startSpeechRecognition();
+        document.querySelector('button').style.display = 'none';
+        document.getElementById('textToSpeak').style.display = 'block';
+    }
 
-        let recognition; // Declare recognition variable globally
+    function handleKeyDown(event) {
+        if (event.key === 'Enter') {
+            const messageInput = document.getElementById('messageInput');
+            const chatBox = document.getElementById('chatBox');
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // Initialization code if needed
-        });
-
-        function startSpeechRecognition() {
-            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                recognition.continuous = false;
-                recognition.lang = 'ja-JP'; // Set to Japanese language by default
-
-                recognition.onresult = function (event) {
-                    const transcript = event.results[0][0].transcript;
-                    document.getElementById("output").innerText = transcript;
-                };
-
-                recognition.onerror = function (event) {
-                    console.error('Speech recognition error:', event.error);
-                };
-
-                recognition.onstart = function () {
-                    document.getElementById('loading').style.display = 'block';
-                };
-
-                recognition.onend = function () {
-                    document.getElementById('loading').style.display = 'none';
-                    startSpeechRecognition(); // Restart recognition when it ends
-                };
-
-                recognition.start();
-            } else {
-                alert('Speech Recognition is not supported in this browser.');
+            const userMessage = messageInput.value.trim();
+            if (userMessage) {
+                const newMessage = document.createElement('div');
+                newMessage.innerText = userMessage;
+                chatBox.appendChild(newMessage);
+                messageInput.value = '';
             }
         }
-
-        function stopSpeechRecognition() {
-            if (recognition && recognition.running) {
-                recognition.stop();
-            }
-        }
-
-        function switchToTextareaAndStartRecognition() {
-            startSpeechRecognition();
-            document.querySelector('button').style.display = 'none';
-            document.getElementById('textToSpeak').style.display = 'block';
-        }
+    }
 </script>
 
 </body>
