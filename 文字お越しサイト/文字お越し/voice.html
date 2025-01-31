@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1文字ずつ表示と音声読み上げ</title>
+</head>
+<body>
+
+<div id="text"></div>
+
+<script>
+    const text = "これはテストの文章です。";
+    const textElement = document.getElementById("text");
+    const speech = new SpeechSynthesisUtterance();
+    let index = 0;
+
+    function typeAndSpeak() {
+        if (index < text.length) {
+            const char = text.charAt(index);
+            textElement.textContent += char;
+            speech.text = char;
+            speechSynthesis.speak(speech);
+            index++;
+
+            setTimeout(typeAndSpeak, 200); // 文字を表示して音声を読み上げる間隔
+        }
+    }
+
+    typeAndSpeak();
+</script>
+
+</body>
+</html>

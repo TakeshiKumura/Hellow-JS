@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字認識システム</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        canvas {
+            display: none;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>文字認識システム</h1>
+    <p>画像をアップロードしてください:</p>
+    <input type="file" id="imageInput" accept="image/*">
+    <canvas id="canvas"></canvas>
+    <div id="output">ここに認識結果が表示されます。</div>
+
+    <script>
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+    
+            const img = new Image();
+            img.onload = () => {
+                const scale = 2; // 解像度を拡大
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+    
+                const ctx = canvas.getContext('2d');
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0);
+    
+                preprocessImage().then((processedImage) => {
+                    runOCR(processedImage);
+                });
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    
+        async function preprocessImage() {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+            // コントラストと明るさの調整
+            const contrast = 1.5, brightness = -50;
+            ctx.putImageData(adjustContrastBrightness(imageData, contrast, brightness), 0, 0);
+    
+            // バイナリ化
+            ctx.putImageData(binarizeImage(imageData, 128), 0, 0);
+    
+            return canvas.toDataURL();
+        }
+    </script>
+    
+</body>
+</html>
