@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音声認識デモ</title>
+</head>
+<body>
+  <h1>音声認識アプリ</h1>
+  <button id="start">録音開始</button>
+  <button id="stop">録音停止</button>
+  <p id="result">結果: </p>
+
+  <script>
+    // Web Speech API の利用
+    const startButton = document.getElementById('start');
+    const stopButton = document.getElementById('stop');
+    const resultElement = document.getElementById('result');
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'ja-JP'; // 日本語
+    recognition.interimResults = false; // 確定結果のみ取得
+    recognition.continuous = true; // 継続して音声認識を実行
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript;
+      resultElement.textContent = `結果: ${transcript}`;
+      console.log('認識結果:', transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('エラー:', event.error);
+    };
+
+    startButton.onclick = () => {
+      recognition.start();
+      console.log('録音開始');
+    };
+
+    stopButton.onclick = () => {
+      recognition.stop();
+      console.log('録音停止');
+    };
+  </script>
+</body>
+</html>
